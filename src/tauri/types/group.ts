@@ -1,0 +1,33 @@
+import { EntryItem, MediaFormat, MediaItem } from './media';
+
+export type Group = {
+  id: string;
+  total: number;
+  processed: number;
+  errored: number;
+  isCombined: boolean;
+  items: Record<string, MediaItem>;
+  url: string;
+  title?: string;
+  thumbnail?: string;
+  description?: string;
+  uploaderId?: string;
+  uploader?: string;
+  extractor?: string;
+  views?: number;
+  comments?: number;
+  likes?: number;
+  dislikes?: number;
+  rating?: number;
+  duration?: number;
+  audioCodecs: string[];
+  formats: MediaFormat[];
+  entries?: EntryItem[];
+  filesize: number;
+  playlistId?: string;
+  playlistTitle?: string;
+  playlistCount?: number;
+  playlistUploader?: string;
+  playlistUploaderId?: string;
+  fromShortcut?: boolean;
+};

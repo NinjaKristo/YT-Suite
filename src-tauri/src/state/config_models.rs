@@ -1,0 +1,282 @@
+use crate::commands::NotificationKind;
+use crate::models::download::{AudioFormat, TranscodePolicy, VideoContainer};
+use serde::{Deserialize, Serialize};
+use std::thread;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct AppearanceSettings {
+  pub theme: String,
+  pub language: String,
+}
+
+impl Default for AppearanceSettings {
+  fn default() -> Self {
+    Self {
+      theme: "system".into(),
+      language: "system".into(),
+    }
+  }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct AuthSettings {
+  pub cookie_file: Option<String>,
+  pub cookie_browser: String,
+}
+
+impl Default for AuthSettings {
+  fn default() -> Self {
+    Self {
+      cookie_file: None,
+      cookie_browser: "none".into(),
+    }
+  }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct NetworkSettings {
+  pub enable_proxy: Option<bool>,
+  pub proxy: Option<String>,
+  pub impersonate: String,
+}
+
+impl Default for NetworkSettings {
+  fn default() -> Self {
+    Self {
+      enable_proxy: None,
+      proxy: None,
+      impersonate: "none".into(),
+    }
+  }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct InputSettings {
+  pub auto_fill_clipboard: bool,
+  pub prefer_video_in_mixed_links: bool,
+  pub global_shortcuts: bool,
+}
+
+impl Default for InputSettings {
+  fn default() -> Self {
+    Self {
+      auto_fill_clipboard: true,
+      prefer_video_in_mixed_links: false,
+      global_shortcuts: true,
+    }
+  }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VideoOutputSettings {
+  pub container: VideoContainer,
+  pub policy: TranscodePolicy,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AudioOutputSettings {
+  pub format: AudioFormat,
+  pub policy: TranscodePolicy,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutputSettings {
+  pub video: VideoOutputSettings,
+  pub audio: AudioOutputSettings,
+  pub add_metadata: bool,
+  pub add_thumbnail: bool,
+  pub download_dir: Option<String>,
+  pub file_name_template: String,
+  pub audio_file_name_template: String,
+  pub restrict_filenames: bool,
+}
+
+impl Default for OutputSettings {
+  fn default() -> Self {
+    Self {
+      video: VideoOutputSettings {
+        policy: TranscodePolicy::RemuxOnly,
+        container: VideoContainer::Mp4,
+      },
+      audio: AudioOutputSettings {
+        policy: TranscodePolicy::AllowReencode,
+        format: AudioFormat::Mp3,
+      },
+      add_metadata: true,
+      add_thumbnail: true,
+      download_dir: None,
+      file_name_template: "%(title).200s-(%(height)sp%(fps).0d).%(ext)s".into(),
+      audio_file_name_template: "%(title).200s-(%(abr)dk).%(ext)s".into(),
+      restrict_filenames: false,
+    }
+  }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct PerformanceSettings {
+  pub max_concurrency: usize,
+  pub split_playlist_threshold: usize,
+  pub auto_load_size: bool,
+}
+
+impl Default for PerformanceSettings {
+  fn default() -> Self {
+    Self {
+      max_concurrency: thread::available_parallelism()
+        .map(|n| n.get().div_ceil(2))
+        .unwrap_or(1),
+      split_playlist_threshold: 50,
+      auto_load_size: true,
+    }
+  }
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct SponsorBlockSettings {
+  pub api_url: Option<String>,
+  pub remove_parts: Vec<String>,
+  pub mark_parts: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct SubtitleSettings {
+  pub enabled: bool,
+  pub include_auto_generated: bool,
+  pub languages: Vec<String>,
+  pub format_preference: Vec<String>,
+  pub embed_subtitles: bool,
+}
+
+impl Default for SubtitleSettings {
+  fn default() -> Self {
+    Self {
+      enabled: false,
+      include_auto_generated: false,
+      languages: vec!["en".into()],
+      embed_subtitles: true,
+      format_preference: vec![
+        "srt".into(),
+        "vtt".into(),
+        "ass".into(),
+        "ttml".into(),
+        "json".into(),
+      ],
+    }
+  }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct UpdateSettings {
+  pub update_binaries: bool,
+  pub update_app: bool,
+}
+
+impl Default for UpdateSettings {
+  fn default() -> Self {
+    Self {
+      update_binaries: true,
+      update_app: true,
+    }
+  }
+}
+
+#[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum CloseBehavior {
+  Exit,
+  Hide,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct SystemConfig {
+  pub tray_enabled: bool,
+  pub auto_start_enabled: bool,
+  pub auto_start_minimised: bool,
+  pub close_behavior: CloseBehavior,
+}
+
+impl Default for SystemConfig {
+  fn default() -> Self {
+    #[cfg(target_os = "windows")]
+    {
+      Self {
+        tray_enabled: false,
+        auto_start_enabled: false,
+        auto_start_minimised: false,
+        close_behavior: CloseBehavior::Exit,
+      }
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+      Self {
+        tray_enabled: false,
+        auto_start_enabled: false,
+        auto_start_minimised: false,
+        close_behavior: CloseBehavior::Hide,
+      }
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+      Self {
+        tray_enabled: false,
+        auto_start_enabled: false,
+        auto_start_minimised: false,
+        close_behavior: CloseBehavior::Exit,
+      }
+    }
+  }
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum NotificationBehavior {
+  Always,
+  OnBackground,
+  Never,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct NotificationConfig {
+  pub notification_behavior: NotificationBehavior,
+  pub disabled_notifications: Vec<NotificationKind>,
+}
+
+impl Default for NotificationConfig {
+  fn default() -> Self {
+    Self {
+      notification_behavior: NotificationBehavior::Never,
+      disabled_notifications: vec![],
+    }
+  }
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct Config {
+  pub appearance: AppearanceSettings,
+  pub auth: AuthSettings,
+  pub network: NetworkSettings,
+  pub input: InputSettings,
+  pub output: OutputSettings,
+  pub performance: PerformanceSettings,
+  pub sponsor_block: SponsorBlockSettings,
+  pub subtitles: SubtitleSettings,
+  pub update: UpdateSettings,
+  pub system: SystemConfig,
+  pub notifications: NotificationConfig,
+}
