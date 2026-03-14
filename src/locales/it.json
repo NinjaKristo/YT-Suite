@@ -211,6 +211,20 @@
           "both": "Video + audio",
           "audio": "Audio",
           "video": "Video"
+        },
+        "clip": {
+          "toggle": "Clip mode",
+          "startTime": "Start time",
+          "endTime": "End time",
+          "startPlaceholder": "00:00:00",
+          "endPlaceholder": "00:01:30",
+          "quality": "Max quality",
+          "playlistWarning": "Clip mode applies to all items in a playlist",
+          "errors": {
+            "invalidStart": "Invalid start time format (use MM:SS or HH:MM:SS)",
+            "invalidEnd": "Invalid end time format (use MM:SS or HH:MM:SS)",
+            "endBeforeStart": "End time must be after start time"
+          }
         }
       },
       "download": {

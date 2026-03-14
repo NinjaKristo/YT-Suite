@@ -64,4 +64,8 @@ pub struct FormatOptions {
   pub abr: Option<u32>,
   pub height: Option<u32>,
   pub fps: Option<u32>,
+  pub clip_mode: Option<bool>,
+  pub clip_start: Option<String>,
+  pub clip_end: Option<String>,
+  pub clip_quality: Option<u32>,
 }

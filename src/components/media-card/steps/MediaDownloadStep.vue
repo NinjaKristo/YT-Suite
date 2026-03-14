@@ -27,6 +27,10 @@
       }}
     </base-progress>
 
+    <div v-if="clipRange" class="text-xs opacity-60">
+      {{ clipRange }}
+    </div>
+
     <div v-if="!isIndeterminate" class="w-full flex gap-4">
       <p>
         {{ t('media.steps.download.metadata.eta', { eta: etaDisplay }) }}
@@ -41,6 +45,7 @@
 <script setup lang="ts">
 import { computed, PropType, ref, watch } from 'vue';
 import { useMediaProgressStore } from '../../../stores/media/progress';
+import { useMediaOptionsStore } from '../../../stores/media/options';
 import BaseProgress from '../../base/BaseProgress.vue';
 import { capitalizeFirstLetter } from '../../../helpers/progress';
 import { formatBytesPerSec, formatDuration } from '../../../helpers/units';
@@ -59,7 +64,14 @@ const { group } = defineProps({
 });
 
 const store = useMediaProgressStore();
+const optionsStore = useMediaOptionsStore();
 const progress = computed(() => store.findDownloadProgress(group.id));
+
+const clipRange = computed(() => {
+  const options = optionsStore.getOptions(group.id);
+  if (!options?.clipMode || !options.clipStart || !options.clipEnd) return null;
+  return `Clip: ${options.clipStart} – ${options.clipEnd}`;
+});
 
 const isIndeterminate = computed(() => {
   if (!progress.value) return true;

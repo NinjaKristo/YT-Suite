@@ -94,6 +94,32 @@ pub fn build_format_args(
   args
 }
 
+pub fn build_clip_args(format_options: &FormatOptions) -> Option<Vec<String>> {
+  if !format_options.clip_mode.unwrap_or(false) {
+    return None;
+  }
+  let start = format_options
+    .clip_start
+    .as_deref()
+    .filter(|s| !s.is_empty())?;
+  let end = format_options
+    .clip_end
+    .as_deref()
+    .filter(|s| !s.is_empty())?;
+  let quality = format_options.clip_quality.unwrap_or(720);
+  Some(vec![
+    "--download-sections".into(),
+    format!("*{start}-{end}"),
+    "--force-keyframes-at-cuts".into(),
+    "-f".into(),
+    format!(
+      "bv[height<={quality}][ext=mp4]+ba[ext=m4a]/bv[height<={quality}]+ba/best[height<={quality}]"
+    ),
+    "--merge-output-format".into(),
+    "mp4".into(),
+  ])
+}
+
 pub fn build_output_args(
   format_options: &FormatOptions,
   output_settings: &OutputSettings,
@@ -252,6 +278,10 @@ mod tests {
       abr,
       height: None,
       fps: None,
+      clip_mode: None,
+      clip_start: None,
+      clip_end: None,
+      clip_quality: None,
     }
   }
 
@@ -261,6 +291,10 @@ mod tests {
       abr: None,
       height,
       fps,
+      clip_mode: None,
+      clip_start: None,
+      clip_end: None,
+      clip_quality: None,
     }
   }
 
@@ -270,6 +304,10 @@ mod tests {
       abr: None,
       height,
       fps,
+      clip_mode: None,
+      clip_start: None,
+      clip_end: None,
+      clip_quality: None,
     }
   }
 
@@ -552,5 +590,64 @@ mod tests {
     let args = build_output_args(&format_options, &settings);
 
     assert!(!args.contains(&"--restrict-filenames".to_string()));
+  }
+
+  #[test]
+  fn clip_args_disabled_returns_none() {
+    let format_options = make_video_format_options(Some(720), Some(60));
+    assert!(build_clip_args(&format_options).is_none());
+  }
+
+  #[test]
+  fn clip_args_enabled_without_times_returns_none() {
+    let format_options = FormatOptions {
+      track_type: TrackType::Both,
+      abr: None,
+      height: Some(720),
+      fps: None,
+      clip_mode: Some(true),
+      clip_start: None,
+      clip_end: None,
+      clip_quality: None,
+    };
+    assert!(build_clip_args(&format_options).is_none());
+  }
+
+  #[test]
+  fn clip_args_enabled_with_times_and_default_quality() {
+    let format_options = FormatOptions {
+      track_type: TrackType::Both,
+      abr: None,
+      height: None,
+      fps: None,
+      clip_mode: Some(true),
+      clip_start: Some("00:30".to_string()),
+      clip_end: Some("01:45".to_string()),
+      clip_quality: None,
+    };
+    let args = build_clip_args(&format_options).expect("should produce args");
+    assert_eq!(args[0], "--download-sections");
+    assert_eq!(args[1], "*00:30-01:45");
+    assert_eq!(args[2], "--force-keyframes-at-cuts");
+    assert!(args[3] == "-f");
+    assert!(args[4].contains("height<=720"));
+    assert_eq!(args[5], "--merge-output-format");
+    assert_eq!(args[6], "mp4");
+  }
+
+  #[test]
+  fn clip_args_enabled_with_custom_quality() {
+    let format_options = FormatOptions {
+      track_type: TrackType::Both,
+      abr: None,
+      height: None,
+      fps: None,
+      clip_mode: Some(true),
+      clip_start: Some("01:23:45".to_string()),
+      clip_end: Some("01:24:30".to_string()),
+      clip_quality: Some(1080),
+    };
+    let args = build_clip_args(&format_options).expect("should produce args");
+    assert!(args[4].contains("height<=1080"));
   }
 }

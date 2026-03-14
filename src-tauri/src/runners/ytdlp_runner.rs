@@ -2,7 +2,9 @@ use crate::models::download::FormatOptions;
 use crate::models::TrackType;
 use crate::paths::PathsManager;
 use crate::runners::template_context::TemplateContext;
-use crate::runners::ytdlp_args::{build_format_args, build_location_args, build_output_args};
+use crate::runners::ytdlp_args::{
+  build_clip_args, build_format_args, build_location_args, build_output_args,
+};
 use crate::runners::ytdlp_process::{
   configure_command, kill_platform_process, platform_process_from_child, PlatformProcess,
 };
@@ -178,6 +180,13 @@ impl<'a> YtdlpRunner<'a> {
     self
       .args
       .extend(build_format_args(format_options, &self.cfg.output.clone()));
+    self
+  }
+
+  pub fn with_clip_args(mut self, format_options: &FormatOptions) -> Self {
+    if let Some(args) = build_clip_args(format_options) {
+      self.args.extend(args);
+    }
     self
   }
 

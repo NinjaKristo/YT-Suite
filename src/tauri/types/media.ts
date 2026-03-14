@@ -30,6 +30,10 @@ export type DownloadOptions = {
   abr?: number;
   height?: number;
   fps?: number;
+  clipMode?: boolean;
+  clipStart?: string;
+  clipEnd?: string;
+  clipQuality?: number;
 };
 
 export interface MediaAddPayload {

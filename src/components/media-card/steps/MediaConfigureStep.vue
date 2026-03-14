@@ -1,5 +1,5 @@
 <template>
-  <div class="card-body py-0 pr-0 grow w-full min-w-0 grid grid-rows-3 grid-cols-2">
+  <div class="card-body py-0 pr-0 grow w-full min-w-0 grid grid-cols-2" style="grid-template-rows: auto auto auto auto;">
     <h2 :title="group.title ?? group.url" class="card-title block leading-8 overflow-hidden text-nowrap text-ellipsis text-base col-span-2">{{ group.title ?? group.url }}</h2>
     <media-download-options
         :formats="group.formats"
@@ -7,6 +7,12 @@
         v-model="selectedOptions"
         class="flex gap-4 w-full col-start-1 col-end-3"
         approximate
+    />
+    <media-clip-options
+        v-if="selectedOptions"
+        v-model="selectedOptions"
+        :is-playlist="group.isCombined"
+        class="col-start-1 col-end-3"
     />
     <p class="mt-2 flex items-center">
       {{ t('media.steps.configure.metadata.duration', { duration: useDuration(group).value }) }}
@@ -45,6 +51,7 @@ import { Group } from '../../../tauri/types/group';
 import { useMediaOptionsStore } from '../../../stores/media/options';
 import { useI18n } from 'vue-i18n';
 import MediaDownloadOptions from '../MediaDownloadOptions.vue';
+import MediaClipOptions from '../MediaClipOptions.vue';
 import { InformationCircleIcon } from '@heroicons/vue/24/outline';
 
 const i18n = useI18n();

@@ -45,6 +45,7 @@ pub async fn run_ytdlp_download(
     .with_subtitle_args()
     .with_sponsorblock_args()
     .with_format_args(&entry.format)
+    .with_clip_args(&entry.format)
     .with_input_args()
     .with_output_args(&entry.format)
     .with_location_args(&entry.format.track_type, &entry.template_context)
