@@ -4,6 +4,7 @@ import { useMediaStateStore, MediaState } from '../../src/stores/media/state';
 import TheFooter from '../../src/components/TheFooter.vue';
 import { mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
+import en from '../../src/locales/en.json';
 
 describe('TheFooter progress message', () => {
   it('shows ready items count excluding completed items', () => {
@@ -36,29 +37,7 @@ describe('TheFooter progress message', () => {
             legacy: false,
             locale: 'en',
             fallbackLocale: 'en',
-            messages: {
-              en: {
-                layout: {
-                  footer: {
-                    format: {
-                      trackSelect: {
-                        screenReader: 'Selecteer track voor alle video\'s',
-                      },
-                      formatSelect: {
-                        noFormats: 'Geen opties',
-                        placeholder: 'Selecteer formaat',
-                        screenReader: 'Selecteer formaat voor alle video\'s',
-                      },
-                    },
-                    progress: {
-                      downloading: 'Downloading queue - {done} of {total} completed.',
-                      completed: 'Download complete – {n} item downloaded. | Download complete – {n} items downloaded.',
-                      ready: 'Ready to download! {n} item queued. | Ready to download! {n} items queued.',
-                    },
-                  },
-                },
-              },
-            },
+            messages: { en },
           }),
         ],
         stubs: {
