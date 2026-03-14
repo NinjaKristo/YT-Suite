@@ -51,10 +51,10 @@
             :value="modelValue.clipQuality ?? 720"
             @change="onQualityChange"
           >
-            <option :value="360">360p</option>
-            <option :value="480">480p</option>
-            <option :value="720">720p</option>
-            <option :value="1080">1080p</option>
+            <option :value="360">{{ t('media.steps.configure.clip.qualityOptions.360') }}</option>
+            <option :value="480">{{ t('media.steps.configure.clip.qualityOptions.480') }}</option>
+            <option :value="720">{{ t('media.steps.configure.clip.qualityOptions.720') }}</option>
+            <option :value="1080">{{ t('media.steps.configure.clip.qualityOptions.1080') }}</option>
           </select>
         </div>
       </div>

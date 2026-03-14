@@ -224,6 +224,12 @@
             "invalidStart": "Invalid start time format (use MM:SS or HH:MM:SS)",
             "invalidEnd": "Invalid end time format (use MM:SS or HH:MM:SS)",
             "endBeforeStart": "End time must be after start time"
+          },
+          "qualityOptions": {
+            "360": "360p",
+            "480": "480p",
+            "720": "720p",
+            "1080": "1080p"
           }
         }
       },
