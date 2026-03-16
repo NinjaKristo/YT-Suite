@@ -1,0 +1,81 @@
+<template>
+  <header class="p-4 bg-base-300 flex gap-4 justify-center w-full shadow-lg">
+    <form @submit.prevent="submitUrl" class="join w-full max-w-155 grow">
+      <input
+          v-model="url"
+          id="url-input"
+          name="URL input for video or playlist"
+          class="input join-item w-full"
+          :placeholder="inputPlaceholder"
+          type="text"
+          ref="input"
+      />
+      <button
+          class="btn btn-primary join-item"
+          type="submit"
+          :disabled="isInputDisabled"
+      >
+        {{ t('common.add') }}
+      </button>
+    </form>
+    <router-link class="btn btn-subtle" :title="t('layout.header.nav.settings')" :to="{ name: 'settings' }">
+      <span class="sr-only">{{ t('layout.header.nav.settings') }}</span>
+      <cog8-tooth-icon class="w-6 h-6"/>
+    </router-link>
+  </header>
+</template>
+
+<script setup lang="ts">
+
+import { Cog8ToothIcon } from '@heroicons/vue/24/outline';
+import { useMediaStore } from '../stores/media/media';
+import { ref, computed, onMounted } from 'vue';
+import { useClipboard } from '../composables/useClipboard';
+import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
+import { useSettingsStore } from '../stores/settings';
+import { isValidUrl } from '../helpers/url.ts';
+
+const { t } = useI18n();
+const router = useRouter();
+const mediaStore = useMediaStore();
+
+const settingsStore = useSettingsStore();
+
+const doPolling = computed(() => settingsStore.settings.input.autoFillClipboard);
+
+const { content: clipboardContent } = useClipboard({
+  doPolling,
+});
+
+const input = ref<HTMLInputElement | null>(null);
+
+const inputPlaceholder = computed(() => {
+  const defaultPlaceholder = t('layout.header.placeholder');
+  if (clipboardHasValidUrl.value) {
+    return clipboardContent.value ?? defaultPlaceholder;
+  } else {
+    return defaultPlaceholder;
+  }
+});
+
+const clipboardHasValidUrl = computed(() => isValidUrl(clipboardContent));
+
+const isInputDisabled = computed(() => {
+  return url.value.length === 0 && !clipboardHasValidUrl.value;
+});
+
+const url = ref('');
+
+const submitUrl = () => {
+  const urlToSubmit = url.value.length > 0 ? url.value : clipboardContent.value;
+  if (!urlToSubmit) return;
+  void mediaStore.dispatchMediaInfoFetch(urlToSubmit);
+  void router.push('/');
+};
+
+onMounted(() => {
+  input.value?.focus();
+});
+
+</script>

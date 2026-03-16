@@ -1,0 +1,72 @@
+name: 'Build MSIX revision'
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-msix:
+    runs-on: ${{ matrix.platform }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: ['windows-latest', 'windows-11-arm']
+    env:
+      WINDOWS_PFX_B64: ${{ secrets.WINDOWS_PFX_B64 }}
+      WINDOWS_PFX_PASSWORD: ${{ secrets.WINDOWS_PFX_PASSWORD }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - name: Install Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: ${{ matrix.platform == 'windows-11-arm' && 'aarch64-pc-windows-msvc' || '' }}
+
+      - name: Install cargo-about
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-about
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Install frontend dependencies
+        run: npm install
+
+      - name: Build Windows exe (no bundle, no release)
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          args: '--no-bundle'
+
+      - name: Fetch tool binaries for MSIX
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run manifest:fetch
+
+      - name: Build and sign MSIX
+        uses: ./.github/actions/msix-build-sign
+        with:
+          pfx-b64: ${{ secrets.WINDOWS_PFX_B64 }}
+          pfx-password: ${{ secrets.WINDOWS_PFX_PASSWORD }}
+          architecture: ${{ runner.arch == 'ARM64' && 'arm64' || 'x64' }}
+
+      - name: Upload MSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ovd-msix-${{ runner.arch == 'ARM64' && 'arm64' || 'x64' }}
+          path: OpenVideoDownloader_${{ runner.arch == 'ARM64' && 'arm64' || 'x64' }}.msix

@@ -1,0 +1,5 @@
+Open Video Downloader – Third-Party Licenses
+===========================================
+
+This is a placeholder file. Upon build time this file gets generated and included in the build.
+Meaning all dependencies of this project are mentioned with their appropriate license text.
